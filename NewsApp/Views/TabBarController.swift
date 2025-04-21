@@ -38,9 +38,9 @@ class TabBarController: UITabBarController {
         tabBar.addSubview(borderView)
         
         NSLayoutConstraint.activate([
-            borderView.topAnchor.constraint(equalTo: tabBar.topAnchor, constant: 0),
-            borderView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            borderView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            borderView.topAnchor.constraint(equalTo: tabBar.topAnchor),
+            borderView.leadingAnchor.constraint(equalTo: tabBar.leadingAnchor),
+            borderView.trailingAnchor.constraint(equalTo: tabBar.trailingAnchor),
             borderView.heightAnchor.constraint(equalToConstant: 1)
         ])
     }

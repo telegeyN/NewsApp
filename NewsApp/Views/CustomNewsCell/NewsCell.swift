@@ -52,20 +52,11 @@ class NewsCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
-    private let favoriteButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.tintColor = UIColor(hex: "#D6A4A4")
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
 
-    var favoriteTapped: (() -> Void)?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupLayout()
-        favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
@@ -78,7 +69,6 @@ class NewsCell: UITableViewCell {
         contentView.addSubview(authorLabel)
         contentView.addSubview(dateLabel)
         contentView.addSubview(descriptionLabel)
-        contentView.addSubview(favoriteButton)
         
         NSLayoutConstraint.activate([
             previewImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
@@ -88,12 +78,7 @@ class NewsCell: UITableViewCell {
             
             titleLabel.topAnchor.constraint(equalTo: previewImageView.bottomAnchor, constant: 8),
             titleLabel.leadingAnchor.constraint(equalTo: previewImageView.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: favoriteButton.leadingAnchor, constant: -10),
-            
-            favoriteButton.topAnchor.constraint(equalTo: previewImageView.bottomAnchor, constant: 8),
-            favoriteButton.trailingAnchor.constraint(equalTo: previewImageView.trailingAnchor),
-            favoriteButton.widthAnchor.constraint(equalToConstant: 30),
-            favoriteButton.heightAnchor.constraint(equalToConstant: 30),
+            titleLabel.trailingAnchor.constraint(equalTo: previewImageView.trailingAnchor),
             
             authorLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             authorLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
@@ -113,10 +98,8 @@ class NewsCell: UITableViewCell {
         descriptionLabel.text = item.description
         authorLabel.text = item.creator?.first ?? "Без автора"
         dateLabel.text = formatDate(item.pubDate)
-        
-        let isFavorite = FavoritesManager.shared.isFavorite(newsItem: item)
-        let iconName = isFavorite ? "heart.fill" : "heart"
-        favoriteButton.setImage(UIImage(systemName: iconName), for: .normal)
+
+        previewImageView.image = nil
 
         if let urlString = item.image_url, let url = URL(string: urlString) {
             loadImage(from: url)
@@ -138,17 +121,13 @@ class NewsCell: UITableViewCell {
     }
 
     private func loadImage(from url: URL) {
-
+        let currentURL = url
         URLSession.shared.dataTask(with: url) { data, _, _ in
-            if let data = data {
+            if let data = data, url == currentURL {
                 DispatchQueue.main.async {
                     self.previewImageView.image = UIImage(data: data)
                 }
             }
         }.resume()
-    }
-
-    @objc private func favoriteButtonTapped() {
-        favoriteTapped?()
     }
 }

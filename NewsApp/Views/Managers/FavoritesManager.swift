@@ -11,25 +11,24 @@ class FavoritesManager {
     static let shared = FavoritesManager()
     private let favoritesKey = "favorites"
     
+    private init() {}
+    
     func saveFavorite(newsItem: NewsItem) {
         var favorites = getFavorites()
-        favorites.append(newsItem)
-        if let encoded = try? JSONEncoder().encode(favorites) {
-            UserDefaults.standard.set(encoded, forKey: favoritesKey)
+        if !favorites.contains(where: { $0.link == newsItem.link }) {
+            favorites.append(newsItem)
+            saveFavorites(favorites)
         }
     }
     
     func removeFavorite(newsItem: NewsItem) {
         var favorites = getFavorites()
-        favorites.removeAll { $0.title == newsItem.title }
-        if let encoded = try? JSONEncoder().encode(favorites) {
-            UserDefaults.standard.set(encoded, forKey: favoritesKey)
-        }
+        favorites.removeAll { $0.link == newsItem.link }
+        saveFavorites(favorites)
     }
     
     func isFavorite(newsItem: NewsItem) -> Bool {
-        let favorites = getFavorites()
-        return favorites.contains { $0.title == newsItem.title }
+        return getFavorites().contains { $0.link == newsItem.link }
     }
     
     func getFavorites() -> [NewsItem] {
@@ -38,5 +37,11 @@ class FavoritesManager {
             return []
         }
         return favorites
+    }
+    
+    private func saveFavorites(_ favorites: [NewsItem]) {
+        if let encoded = try? JSONEncoder().encode(favorites) {
+            UserDefaults.standard.set(encoded, forKey: favoritesKey)
+        }
     }
 }

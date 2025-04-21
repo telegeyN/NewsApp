@@ -67,10 +67,6 @@ extension FavoriteViewController: UITableViewDataSource, UITableViewDelegate {
         guard let item = presenter?.item(at: indexPath.row) else { return cell }
         cell.configure(with: item)
         
-        cell.favoriteTapped = { [weak self] in
-            self?.presenter?.removeFavorite(at: indexPath.row)
-        }
-        
         return cell
     }
     
@@ -79,7 +75,7 @@ extension FavoriteViewController: UITableViewDataSource, UITableViewDelegate {
         let vc = NewsDetailViewController()
         let presenter = NewsDetailPresenter(view: vc, newsItem: item)
         vc.presenter = presenter
+        vc.setNewsItem(item)
         navigationController?.pushViewController(vc, animated: true)
-        
     }
 }

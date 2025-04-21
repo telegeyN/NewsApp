@@ -7,20 +7,21 @@
 
 import UIKit
 
-protocol NewsDetailPresenterProtocol: AnyObject {
+protocol NewsDetailPresenterProtocol {
     func viewDidLoad()
+    func getNewsItem() -> NewsItem
 }
 
 class NewsDetailPresenter: NewsDetailPresenterProtocol {
     
-    private weak var view: NewsDetailViewProtocol?
+    weak var view: NewsDetailViewProtocol?
     private let newsItem: NewsItem
     
     init(view: NewsDetailViewProtocol, newsItem: NewsItem) {
         self.view = view
         self.newsItem = newsItem
     }
-    
+
     func viewDidLoad() {
         view?.displayNews(
             title: newsItem.title,
@@ -29,5 +30,9 @@ class NewsDetailPresenter: NewsDetailPresenterProtocol {
             pubDate: newsItem.pubDate,
             creator: newsItem.creator
         )
+    }
+    
+    func getNewsItem() -> NewsItem {
+        return newsItem
     }
 }

@@ -79,11 +79,6 @@ extension AllNewsViewController: UITableViewDataSource, UITableViewDelegate {
         }
 
         presenter?.loadMoreNewsIfNeeded(at: indexPath.row)
-        
-        cell.favoriteTapped = { [weak self] in
-            self?.presenter?.didTapFavorite(at: indexPath.row)
-        }
-        
         return cell
     }
 
@@ -92,6 +87,7 @@ extension AllNewsViewController: UITableViewDataSource, UITableViewDelegate {
         let vc = NewsDetailViewController()
         let presenter = NewsDetailPresenter(view: vc, newsItem: item)
         vc.presenter = presenter
+        vc.setNewsItem(item)
         navigationController?.pushViewController(vc, animated: true)
     }
 }
