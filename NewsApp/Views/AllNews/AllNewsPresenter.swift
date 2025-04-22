@@ -17,7 +17,7 @@ protocol AllNewsPresenterProtocol: AnyObject {
 
 class AllNewsPresenter: AllNewsPresenterProtocol {
     
-    private var view: AllNewsViewProtocol?
+    private weak var view: AllNewsViewProtocol?
     private var news: [NewsItem] = []
     private var currentPage = 1
     private var isLoading = false
@@ -58,11 +58,7 @@ class AllNewsPresenter: AllNewsPresenterProtocol {
 
     func didTapFavorite(at index: Int) {
         let item = news[index]
-        if FavoritesManager.shared.isFavorite(newsItem: item) {
-            FavoritesManager.shared.removeFavorite(newsItem: item)
-        } else {
-            FavoritesManager.shared.saveFavorite(newsItem: item)
-        }
+        FavoritesManager.shared.toggleFavorite(for: item)
         view?.updateFavorite(at: index)
     }
 

@@ -102,6 +102,11 @@ class NewsDetailViewController: UIViewController, NewsDetailViewProtocol {
         setupUI()
         presenter?.viewDidLoad()
         navigationItem.rightBarButtonItem = favoriteButton
+        NotificationCenter.default.addObserver(self, selector: #selector(favoritesUpdated), name: .favoritesUpdated, object: nil)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     private func setupUI() {
@@ -174,16 +179,22 @@ class NewsDetailViewController: UIViewController, NewsDetailViewProtocol {
 
     @objc private func favoriteTapped() {
         guard let currentNewsItem = currentNewsItem else { return }
-
-        if FavoritesManager.shared.isFavorite(newsItem: currentNewsItem) {
-            FavoritesManager.shared.removeFavorite(newsItem: currentNewsItem)
+        
+        if FavoritesManager.shared.isFavorite(currentNewsItem) {
+            FavoritesManager.shared.removeFavorite(for: currentNewsItem)
             favoriteButton.image = UIImage(systemName: "heart")
+            print("Новость удалена из избранного")
         } else {
-            FavoritesManager.shared.saveFavorite(newsItem: currentNewsItem)
+            FavoritesManager.shared.toggleFavorite(for: currentNewsItem)
             favoriteButton.image = UIImage(systemName: "heart.fill")
+            print("Новость добавлена в избранное")
         }
+        
+        updateFavoriteButtonState()
+    }
 
-        favoriteButton.tintColor = UIColor(hex: "#D6A4A4")
+    @objc private func favoritesUpdated() {
+        updateFavoriteButtonState()
     }
 
     func setNewsItem(_ item: NewsItem) {
@@ -203,7 +214,7 @@ class NewsDetailViewController: UIViewController, NewsDetailViewProtocol {
             imageView.image = UIImage(named: "defaultImage")
         }
 
-        if let currentNewsItem = currentNewsItem, FavoritesManager.shared.isFavorite(newsItem: currentNewsItem) {
+        if let currentNewsItem = currentNewsItem, FavoritesManager.shared.isFavorite(currentNewsItem) {
             favoriteButton.image = UIImage(systemName: "heart.fill")
         } else {
             favoriteButton.image = UIImage(systemName: "heart")
@@ -215,6 +226,7 @@ class NewsDetailViewController: UIViewController, NewsDetailViewProtocol {
         } else {
             sourceLinkButton.isHidden = true
         }
+        
         updateFavoriteButtonState()
     }
     
@@ -223,12 +235,11 @@ class NewsDetailViewController: UIViewController, NewsDetailViewProtocol {
         UIApplication.shared.open(url)
     }
     
-    private func updateFavoriteButtonState() {
-        if let currentNewsItem = currentNewsItem, FavoritesManager.shared.isFavorite(newsItem: currentNewsItem) {
+    func updateFavoriteButtonState() {
+        if let currentNewsItem = currentNewsItem, FavoritesManager.shared.isFavorite(currentNewsItem) {
             favoriteButton.image = UIImage(systemName: "heart.fill")
         } else {
             favoriteButton.image = UIImage(systemName: "heart")
         }
     }
-
 }

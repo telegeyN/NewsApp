@@ -53,6 +53,7 @@ class NewsCell: UITableViewCell {
         return label
     }()
 
+    private var currentImageURL: URL?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -100,10 +101,12 @@ class NewsCell: UITableViewCell {
         dateLabel.text = formatDate(item.pubDate)
 
         previewImageView.image = nil
-
+        
         if let urlString = item.image_url, let url = URL(string: urlString) {
+            currentImageURL = url
             loadImage(from: url)
         } else {
+            currentImageURL = nil
             previewImageView.image = UIImage(systemName: "photo")
         }
     }
@@ -121,11 +124,19 @@ class NewsCell: UITableViewCell {
     }
 
     private func loadImage(from url: URL) {
-        let currentURL = url
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            if let data = data, url == currentURL {
-                DispatchQueue.main.async {
+        let imageURL = url
+        print("Загружаем img \(imageURL)")
+
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+            guard let self = self else { return }
+            guard let data = data else { return }
+
+            DispatchQueue.main.async {
+                if self.currentImageURL == imageURL {
                     self.previewImageView.image = UIImage(data: data)
+                    print("Загрузилось")
+                } else {
+                    print("Не загрузилось, путается")
                 }
             }
         }.resume()

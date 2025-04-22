@@ -33,8 +33,11 @@ class FavoritePresenter: FavoritePresenterProtocol {
     }
     
     func viewWillAppear() {
-        favorites = FavoritesManager.shared.getFavorites()
-        view?.displayFavorites(favorites)
+        NewsNetworkService.shared.fetchNews(page: 1) { [weak self] allItems in
+            guard let self = self else { return }
+            self.favorites = FavoritesManager.shared.filterFavorites(from: allItems)
+            self.view?.displayFavorites(self.favorites)
+        }
     }
     
     func didSelectFavorite(at index: Int) {
@@ -43,8 +46,7 @@ class FavoritePresenter: FavoritePresenterProtocol {
     
     func removeFavorite(at index: Int) {
         let item = favorites[index]
-        FavoritesManager.shared.removeFavorite(newsItem: item)
-        favorites = FavoritesManager.shared.getFavorites()
-        view?.displayFavorites(favorites)
+        FavoritesManager.shared.toggleFavorite(for: item)
+        viewWillAppear()
     }
 }

@@ -12,36 +12,54 @@ class FavoritesManager {
     private let favoritesKey = "favorites"
     
     private init() {}
-    
-    func saveFavorite(newsItem: NewsItem) {
-        var favorites = getFavorites()
-        if !favorites.contains(where: { $0.link == newsItem.link }) {
-            favorites.append(newsItem)
-            saveFavorites(favorites)
+
+    private func saveFavorites(_ ids: [String]) {
+        UserDefaults.standard.set(ids, forKey: favoritesKey)
+        UserDefaults.standard.synchronize()
+        print("Избранные данные сохранены в UserDefaults: \(ids)")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            NotificationCenter.default.post(name: .favoritesUpdated, object: nil)
         }
     }
+
+    func getFavorites() -> [String] {
+        return UserDefaults.standard.stringArray(forKey: favoritesKey) ?? []
+    }
     
-    func removeFavorite(newsItem: NewsItem) {
+    func filterFavorites(from allItems: [NewsItem]) -> [NewsItem] {
+        let favoriteIDs = getFavorites()
+        return allItems.filter { favoriteIDs.contains($0.article_id) }
+    }
+
+    func isFavorite(_ item: NewsItem) -> Bool {
+        return getFavorites().contains(item.article_id)
+    }
+
+    func removeFavorite(for item: NewsItem) {
         var favorites = getFavorites()
-        favorites.removeAll { $0.link == newsItem.link }
+        favorites.removeAll { $0 == item.article_id }
         saveFavorites(favorites)
+        NotificationCenter.default.post(name: .favoritesUpdated, object: nil)
+        print("Избранное обновлено, новость удалена: \(item.article_id)")
     }
-    
-    func isFavorite(newsItem: NewsItem) -> Bool {
-        return getFavorites().contains { $0.link == newsItem.link }
-    }
-    
-    func getFavorites() -> [NewsItem] {
-        guard let data = UserDefaults.standard.data(forKey: favoritesKey),
-              let favorites = try? JSONDecoder().decode([NewsItem].self, from: data) else {
-            return []
+
+    func toggleFavorite(for item: NewsItem) {
+        var favorites = getFavorites()
+
+        if let index = favorites.firstIndex(of: item.article_id) {
+            favorites.remove(at: index)
+            print("Удалено из избранного: \(item.article_id)")
+        } else {
+            favorites.append(item.article_id)
+            print("Добавлено в избранное: \(item.article_id)")
         }
-        return favorites
+
+        saveFavorites(favorites)
+        NotificationCenter.default.post(name: .favoritesUpdated, object: nil)
     }
-    
-    private func saveFavorites(_ favorites: [NewsItem]) {
-        if let encoded = try? JSONEncoder().encode(favorites) {
-            UserDefaults.standard.set(encoded, forKey: favoritesKey)
-        }
-    }
+}
+
+extension Notification.Name {
+    static let favoritesUpdated = Notification.Name("favoritesUpdated")
 }
